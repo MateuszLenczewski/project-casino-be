@@ -1,0 +1,18 @@
+services:
+  casino-app:
+    # Build the image from the Dockerfile in the current directory
+    build: .
+    # Rename the container for easier identification
+    container_name: casino-backend
+    ports:
+      # Map port 8080 on your machine to port 8080 in the container
+      - "8080:8080"
+      - "5005:5005"  # Port for remote debugging
+    volumes:
+      # Mount the Firebase service account key into the container at runtime.
+      # This is more secure than copying it into the image.
+      - ./src/main/resources/serviceAccountKey.json:/app/serviceAccountKey.json
+    environment:
+      # Set an environment variable to tell Spring Boot where to find the key inside the container
+      - FIREBASE_SERVICE_ACCOUNT_KEY_PATH=file:/app/serviceAccountKey.json
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
