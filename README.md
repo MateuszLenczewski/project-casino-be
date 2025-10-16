@@ -53,7 +53,7 @@ The backend requires credentials to connect to your Firebase project.
 3.  A JSON file will be downloaded. Rename this file to **`serviceAccountKey.json`**.
 4.  Place this file inside the project's resource folder at: `src/main/resources/`.
 
-#### 1.2 Enable Required Services
+#### 1.2 Enable Required Services (required only once for the firestore setup)
 
 1.  **Authentication**: In the Firebase Console, go to **Authentication** -\> **Sign-in method** and **enable** at least one provider (e.g., **Google** or **Email/Password**).
 2.  **Database**: Go to **Firestore Database**, click **"Create database"**, and start in **Test mode** for development.
