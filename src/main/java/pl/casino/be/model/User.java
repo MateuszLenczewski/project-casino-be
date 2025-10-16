@@ -4,9 +4,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Data // Lombok - generuje gettery, settery, etc.
+@Data
 public class User {
-    private String uid; // Identyfikator z Firebase Auth
+    private String uid;
     private String email;
     private String displayName;
     private BigDecimal balance;

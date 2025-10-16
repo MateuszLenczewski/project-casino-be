@@ -25,7 +25,8 @@ public class SecurityConfig {
             "/webjars/**",
             "/ws/**",
             "/api/public/**",
-            "/api/v1/games/cosmic-cashout/state"
+            "/api/v1/games/cosmic-cashout/state",
+            "/api/v1/dashboard/big-wins"
     };
 
     public SecurityConfig(FirebaseTokenFilter firebaseTokenFilter) {

@@ -4,12 +4,12 @@ import com.google.cloud.firestore.*;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pl.casino.be.dto.GameHistoryDto;
-import pl.casino.be.dto.TransactionDto;
 import pl.casino.be.dto.UserProfileDto;
+import pl.casino.be.model.GameHistory;
 import pl.casino.be.model.User;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -19,7 +19,6 @@ public class UserService {
 
     private final Firestore firestore;
     private static final String USERS_COLLECTION = "users";
-    private static final String TRANSACTIONS_COLLECTION = "transactions";
     private static final String GAME_HISTORY_COLLECTION = "game_history";
 
     public UserService(Firestore firestore) {
@@ -62,28 +61,22 @@ public class UserService {
             DocumentSnapshot userDoc = userRef.get().get();
             if (userDoc.exists()) {
                 User user = userDoc.toObject(User.class);
-
-                // Get last 20 transactions
-                List<TransactionDto> transactions = firestore.collection(TRANSACTIONS_COLLECTION)
-                        .whereEqualTo("userId", uid)
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .limit(20)
-                        .get().get().toObjects(TransactionDto.class);
-
-                // Get last 20 games
-                List<GameHistoryDto> games = firestore.collection(GAME_HISTORY_COLLECTION)
-                        .whereEqualTo("userId", uid)
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .limit(20)
-                        .get().get().toObjects(GameHistoryDto.class);
-
-                return new UserProfileDto(user.getUid(), user.getEmail(), user.getDisplayName(), user.getBalance(), transactions, games);
+                assert user != null;
+                return new UserProfileDto(user.getUid(), user.getEmail(), user.getDisplayName(), user.getBalance());
             }
-            throw new RuntimeException("User not found with UID: " + uid);
+            throw new RuntimeException(MessageFormat.format("User not found with UID: {0}", uid));
         } catch (InterruptedException | ExecutionException e) {
             log.error("Error retrieving profile for UID: {}", uid, e);
             Thread.currentThread().interrupt();
             throw new RuntimeException("Failed to retrieve user profile.", e);
         }
     }
+
+    public List<GameHistory> getGameHistoryForUser(String uid) throws ExecutionException, InterruptedException {
+        return firestore.collection(GAME_HISTORY_COLLECTION)
+                .whereEqualTo("userId", uid)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get().get().toObjects(GameHistory.class);
+    }
+
 }

@@ -6,12 +6,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pl.casino.be.dto.GameHistoryDto;
-import pl.casino.be.dto.TransactionDto;
+import pl.casino.be.dto.*;
+import pl.casino.be.model.GameHistory;
+import pl.casino.be.model.Transaction;
+import pl.casino.be.model.User;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,26 +28,54 @@ public class AdminService {
         this.firebaseAuth = firebaseAuth;
     }
 
+    private Map<String, String> getUserMap() throws ExecutionException, InterruptedException {
+        return firestore.collection("users").get().get().toObjects(User.class).stream()
+                .collect(Collectors.toMap(User::getUid, User::getDisplayName, (existing, _) -> existing));
+    }
+
     /**
      * Downloads all transactions from the system, sorted from newest to oldest.
      * @return List of transaction DTOs.
      */
-    public List<TransactionDto> getAllTransactions() throws ExecutionException, InterruptedException {
-        return firestore.collection("transactions")
+    public List<AdminTransactionDto> getAllTransactions() throws ExecutionException, InterruptedException {
+        Map<String, String> userMap = getUserMap(); // Get the guest list
+        List<Transaction> transactions = firestore.collection("transactions")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get().get().toObjects(TransactionDto.class);
+                .limit(50) // Limit for performance
+                .get().get().toObjects(Transaction.class);
+
+        // Map the raw data to the new DTO, adding the username
+        return transactions.stream().map(tx -> new AdminTransactionDto(
+                userMap.getOrDefault(tx.getUserId(), "Unknown User"), // Look up the name
+                tx.getUserId(),
+                tx.getType(),
+                tx.getAmount(),
+                tx.getTimestamp()
+        )).collect(Collectors.toList());
     }
 
     /**
      * Downloads all game histories from the system, sorted from newest to oldest.
      * @return List of game history DTOs.
      */
-    public List<GameHistoryDto> getAllGameHistories() throws ExecutionException, InterruptedException {
-        return firestore.collection("game_history")
+    public List<AdminGameHistoryDto> getAllGameHistories() throws ExecutionException, InterruptedException {
+        Map<String, String> userMap = getUserMap(); // Get the guest list
+        List<GameHistory> games = firestore.collection("game_history")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get().get().toObjects(GameHistoryDto.class);
-    }
+                .limit(50) // Limit for performance
+                .get().get().toObjects(GameHistory.class);
 
+        // Map the raw data to the new DTO, adding the username
+        return games.stream().map(game -> new AdminGameHistoryDto(
+                userMap.getOrDefault(game.getUserId(), "Unknown User"), // Look up the name
+                game.getUserId(),
+                game.getGameType(),
+                game.getBetAmount(),
+                game.getWinAmount(),
+                game.getResult(),
+                game.getTimestamp()
+        )).collect(Collectors.toList());
+    }
     /**
      * Gives a user admin privileges by setting a custom claim in Firebase Authentication.
      * @param uid User ID to promote to admin.
@@ -70,5 +101,10 @@ public class AdminService {
                 "totalTransactions", totalTransactions,
                 "totalGamesPlayed", totalGamesPlayed
         );
+    }
+
+    public List<UserProfileDto> getAllUsers() throws ExecutionException, InterruptedException {
+        return firestore.collection("users")
+                .get().get().toObjects(UserProfileDto.class);
     }
 }

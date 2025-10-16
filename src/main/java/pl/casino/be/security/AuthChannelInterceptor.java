@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
                 return message; // Or throw an exception if you want to force auth
             }
 
-            String token = authorization.get(0);
+            String token = authorization.getFirst();
             if (token != null && token.startsWith("Bearer ")) {
                 String tokenStr = token.substring(7);
                 try {
@@ -54,7 +55,7 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
                     Map<String, Object> claims = decodedToken.getClaims();
                     String role = (String) claims.getOrDefault("role", "USER");
                     List<GrantedAuthority> authorities = new ArrayList<>();
-                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                    authorities.add(new SimpleGrantedAuthority(MessageFormat.format("ROLE_{0}", role)));
 
                     // Create the Spring Security Authentication object
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(uid, null, authorities);

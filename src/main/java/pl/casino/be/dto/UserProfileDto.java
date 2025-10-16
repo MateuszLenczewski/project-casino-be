@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,6 +16,4 @@ public class UserProfileDto {
     String email;
     String displayName;
     BigDecimal balance;
-    List<TransactionDto> transactionHistory;
-    List<GameHistoryDto> gameHistory;
 }

@@ -11,6 +11,7 @@ import pl.casino.be.model.TransactionType;
 import pl.casino.be.model.User;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -57,6 +58,9 @@ public class WalletService {
      * @param amount Bet amount (positive).
      */
     public void placeBet(String uid, BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Bet amount must be positive.");
+        }
         updateBalance(uid, amount.negate(), TransactionType.BET);
     }
 
@@ -85,14 +89,15 @@ public class WalletService {
             firestore.runTransaction(tx -> {
                 DocumentSnapshot userDoc = tx.get(userRef).get();
                 if (!userDoc.exists()) {
-                    throw new IllegalStateException("User not found: " + uid);
+                    throw new IllegalStateException(MessageFormat.format("User not found: {0}", uid));
                 }
                 User user = userDoc.toObject(User.class);
+                assert user != null;
                 BigDecimal currentBalance = user.getBalance();
                 BigDecimal newBalance = currentBalance.add(amount);
 
                 if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-                    throw new InsufficientFundsException("Insufficient funds for user: " + uid);
+                    throw new InsufficientFundsException(MessageFormat.format("Insufficient funds for user: {0}", uid));
                 }
 
                 // Update user balance
@@ -101,7 +106,7 @@ public class WalletService {
                 // Create transaction record
                 Transaction newTransaction = new Transaction();
                 newTransaction.setUserId(uid);
-                newTransaction.setAmount(amount.abs()); // Zapisujemy zawsze wartość dodatnią
+                newTransaction.setAmount(amount.abs());
                 newTransaction.setType(type);
                 newTransaction.setTimestamp(new Date());
                 tx.set(transactionRef, newTransaction);

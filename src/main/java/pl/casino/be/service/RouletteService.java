@@ -30,19 +30,19 @@ public class RouletteService {
     }
 
     public GameHistory play(String uid, BetRequest bet) {
-        // 1. Place the bet (deduct from wallet)
+        // Place the bet (deduct from wallet)
         walletService.placeBet(uid, bet.amount());
 
-        // 2. Spin the roulette
+        // Spin the roulette
         int winningNumber = random.nextInt(37); // 0-36
 
-        // 3. Calculate winnings
+        // Calculate winnings
         BigDecimal winnings = calculateWinnings(bet, winningNumber);
 
-        // 4. Process winnings (add to wallet if any)
+        // Process winnings (add to wallet if any)
         walletService.processWin(uid, winnings);
 
-        // 5. Log game history
+        // Log game history
         String resultDescription = winningNumber == 0 ? "0" : String.valueOf(winningNumber);
         GameHistory gameHistory = createGameHistory(uid, bet.amount(), winnings, resultDescription);
         saveGameHistory(gameHistory);

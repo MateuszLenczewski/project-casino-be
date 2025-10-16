@@ -7,10 +7,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
-import pl.casino.be.dto.GameHistoryDto;
-import pl.casino.be.dto.TransactionDto;
+import pl.casino.be.dto.*;
 import pl.casino.be.service.AdminService;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -34,23 +34,23 @@ public class AdminController {
     public ResponseEntity<?> promoteUserToAdmin(@PathVariable String uid) {
         try {
             adminService.setUserRoleToAdmin(uid);
-            return ResponseEntity.ok(Map.of("message", "User " + uid + " has been promoted to ADMIN."));
+            return ResponseEntity.ok(Map.of("message", MessageFormat.format("User {0} has been promoted to ADMIN.", uid)));
         } catch (FirebaseAuthException e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Error promoting user: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", MessageFormat.format("Error promoting user: {0}", e.getMessage())));
         }
     }
 
     @GetMapping("/transactions")
     @Operation(summary = "Get all transactions history",
             description = "Returns a list of all financial transactions in the system.")
-    public ResponseEntity<List<TransactionDto>> getAllTransactions() throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<AdminTransactionDto>> getAllTransactions() throws ExecutionException, InterruptedException {
         return ResponseEntity.ok(adminService.getAllTransactions());
     }
 
     @GetMapping("/games")
     @Operation(summary = "Get all games history",
             description = "Returns a list of all games played in the system.")
-    public ResponseEntity<List<GameHistoryDto>> getAllGameHistories() throws ExecutionException, InterruptedException {
+    public ResponseEntity<List<AdminGameHistoryDto>> getAllGameHistories() throws ExecutionException, InterruptedException {
         return ResponseEntity.ok(adminService.getAllGameHistories());
     }
 
@@ -59,5 +59,12 @@ public class AdminController {
             description = "Returns key statistics about the casino's operation.")
     public ResponseEntity<Map<String, Object>> getStatistics() throws ExecutionException, InterruptedException {
         return ResponseEntity.ok(adminService.getCasinoStatistics());
+    }
+
+    @GetMapping("/users")
+    @Operation(summary = "Get all users list",
+            description = "Returns a list of all registered users in the system.")
+    public ResponseEntity<List<UserProfileDto>> getAllUsers() throws ExecutionException, InterruptedException {
+        return ResponseEntity.ok(adminService.getAllUsers());
     }
 }

@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.casino.be.dto.UserProfileDto;
+import pl.casino.be.model.GameHistory;
 import pl.casino.be.service.UserService;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -32,5 +35,13 @@ public class UserController {
         String uid = principal.getName();
         UserProfileDto userProfile = userService.getUserProfile(uid);
         return ResponseEntity.ok(userProfile);
+    }
+
+    @GetMapping("/games")
+    @Operation(summary = "Get the logged-in user's game history",
+            description = "Returns the full game history for the authenticated user.")
+    public ResponseEntity<List<GameHistory>> getMyGameHistory(Principal principal) throws ExecutionException, InterruptedException {
+        String uid = principal.getName();
+        return ResponseEntity.ok(userService.getGameHistoryForUser(uid));
     }
 }

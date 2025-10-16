@@ -14,6 +14,7 @@ import pl.casino.be.model.PlayerStatus;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -109,9 +110,9 @@ public class CosmicCashoutService {
         log.info("CRASH! Multiplier stopped at {}", formattedCrashPoint);
         messagingTemplate.convertAndSend("/topic/cashout/crash", formattedCrashPoint);
 
-        crashHistory.add(0, finalMultiplier); 
+        crashHistory.addFirst(finalMultiplier);
         if (crashHistory.size() > 10) {
-            crashHistory.remove(crashHistory.size() - 1); 
+            crashHistory.removeLast();
         }
         messagingTemplate.convertAndSend("/topic/cashout/history", crashHistory);
 
@@ -126,7 +127,7 @@ public class CosmicCashoutService {
                             .filter(entry -> entry.getValue().equals(player))
                             .findFirst()
                             .ifPresent(entry -> {
-                                String result = "Loss. Crash at " + formattedCrashPoint + "x";
+                                String result = formattedCrashPoint + "x";
                                 saveGameHistory(entry.getKey(), player.getBetAmount(), BigDecimal.ZERO, result);
                             });
                 });
@@ -177,7 +178,7 @@ public class CosmicCashoutService {
 
             broadcastPlayerList();
 
-            String result = "Win. Cashed out at " + playerState.getCashOutMultiplier() + "x";
+            String result = MessageFormat.format("{0}x", playerState.getCashOutMultiplier());
             saveGameHistory(uid, betAmount, winnings, result);
 
             log.info("User {} cashed out at {}x, winning {}", uid, playerState.getCashOutMultiplier(), winnings);
