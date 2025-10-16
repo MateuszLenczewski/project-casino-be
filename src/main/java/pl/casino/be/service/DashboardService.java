@@ -22,7 +22,7 @@ public class DashboardService {
     public List<PublicGameHistoryDto> getRecentBigWins() throws ExecutionException, InterruptedException {
         // Fetch the last 20 games where the winAmount was greater than zero
         List<GameHistory> games = firestore.collection("game_history")
-                .whereGreaterThan("winAmount", 0) // Filter for wins only
+                .whereGreaterThan("winAmount", "0") // Filter for wins only
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .limit(20)
                 .get().get().toObjects(GameHistory.class);
