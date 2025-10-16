@@ -30,7 +30,6 @@ public class DashboardService {
         // Map to the DTO, generating a fake username for each entry
         return games.stream().map(game -> new PublicGameHistoryDto(
                 UsernameGenerator.generateFakeUsername(), // Use the generator
-                game.getUserId(), // We still need this for the frontend to identify the user
                 game.getGameType(),
                 game.getBetAmount(),
                 game.getWinAmount(),

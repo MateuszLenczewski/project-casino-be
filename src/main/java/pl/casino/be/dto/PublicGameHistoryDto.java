@@ -13,7 +13,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class PublicGameHistoryDto {
     private String username;
-    private String userId;
     private GameType gameType;
     private BigDecimal betAmount;
     private BigDecimal winAmount;
