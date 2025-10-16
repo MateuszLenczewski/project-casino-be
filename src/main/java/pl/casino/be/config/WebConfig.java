@@ -16,7 +16,7 @@ public class WebConfig {
                 // Apply this configuration to all API endpoints
                 registry.addMapping("/api/**")
                         // Allow requests specifically from your frontend's origin
-                        .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins("http://localhost:3000", "https://project-casino-fe.vercel.app")
                         // Allow standard HTTP methods
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         // Allow all headers (like Authorization, Content-Type)
